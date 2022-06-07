@@ -1,2 +1,2 @@
 # Fractals
-The Mandelbrot Set
+The Mandelbrot Set in Unity3D
