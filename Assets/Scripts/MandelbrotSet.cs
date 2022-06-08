@@ -18,32 +18,34 @@ public class MandelbrotSet : MonoBehaviour
     public float IM_START;
     public float IM_END;
     public int MAX_ITER;
-    public RawImage image;
+    public float ZOOM;
     public bool useColorList;
+    int N_COLORS;
+
+    public RawImage image;
     public Gradient colorPallete;
     public Pallete[] colorList;
 
+    Color[] textureColors;
     Texture2D texture;
-    int N_COLORS;
-    
+
     // Start is called before the first frame update
     void Start()
     {
         texture = new Texture2D(Screen.width, Screen.height);
+        image.texture = texture;
         image.color = Color.white;
-        
+
+        textureColors = new Color[texture.width * texture.height];
         N_COLORS = colorList.Length;
         if (useColorList)
-        {
             CreateGradient();
-        }
     }
 
     // Update is called once per frame
     void Update()
     {
         UpdateTexture();
-        image.texture = texture;
     }
 
     void UpdateTexture()
@@ -52,14 +54,14 @@ public class MandelbrotSet : MonoBehaviour
         {
             for (int y = 0; y < texture.height; y++)
             {
-                Complex c = new Complex(RE_START + ((float) x / texture.width) * (RE_END - RE_START),
-                                        IM_START + ((float) y / texture.height) * (IM_END - IM_START));
+                Complex c = new Complex(RE_START + ((float)x / texture.width) * (RE_END - RE_START),
+                                        IM_START + ((float)y / texture.height) * (IM_END - IM_START));
                 int n = Mandelbrot(c);
-                float value = (float) n / MAX_ITER;
-                Color color = colorPallete.Evaluate(value);
-                texture.SetPixel(x, y, color);
+                float value = (float)n / MAX_ITER;
+                textureColors[x + y * texture.width] = colorPallete.Evaluate(value);
             }
         }
+        texture.SetPixels(0, 0, texture.width, texture.height, textureColors);
         texture.Apply();
     }
 
