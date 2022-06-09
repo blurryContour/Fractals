@@ -586,11 +586,12 @@ MonoBehaviour:
   RE_END: 1
   IM_START: -1
   IM_END: 1
-  MAX_ITER: 400
+  MAX_ITER: 255
   ZOOM: 0.5
   maxIterIncrement: 1
   RE_CENTER: -1.5
   IM_CENTER: 0
+  autoZoom: 0
   shader: {fileID: 7200000, guid: 3cd2bd6b3a3c32e4180b7711e084d4fc, type: 3}
   image: {fileID: 1035834590}
 --- !u!1 &1613232275

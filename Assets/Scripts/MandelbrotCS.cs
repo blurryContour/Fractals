@@ -13,6 +13,7 @@ public class MandelbrotCS : MonoBehaviour
     public int maxIterIncrement;
     public float RE_CENTER;
     public float IM_CENTER;
+    public bool autoZoom;
 
     public ComputeShader shader;
     ComputeBuffer buffer;
@@ -76,7 +77,7 @@ public class MandelbrotCS : MonoBehaviour
         if (Input.GetMouseButton(1))
             ZoomOut(true);
 
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) || autoZoom)
             ZoomIn(false);
         if (Input.GetKey(KeyCode.D))
             ZoomOut(false);
