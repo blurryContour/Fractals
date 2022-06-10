@@ -80,13 +80,15 @@ public class Fractal : MonoBehaviour
         mouse = new Vector2();
 
         ComputeFractal();
-        SaveTexture();
     }
 
     // Update is called once per frame
     void Update()
     {
         ComputeFractal();
+
+        if (Input.GetKey(KeyCode.S))
+            SaveTexture();
 
         if (Input.GetKey(KeyCode.LeftArrow))
             RE_CONST -= 0.001f;
