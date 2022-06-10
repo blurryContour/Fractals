@@ -1,59 +1,14 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#ifndef COLORPALLETE_INCLUDED
+#define COLORPALLETE_INCLUDED
+#endif
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
-
-// Mandelbrot variables
-struct DataStruct
-{
-    double re_s, re_e, im_s, im_e;
-    int width, height; 
-};
-
-StructuredBuffer<DataStruct> buffer;
-uint maxIterations;
-
-
-[numthreads(24,24,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    double c_re, c_im;
-    double re, im;
-    double re2, im2;
-
-    re = 0;
-    im = 0;
-    c_re = buffer[0].re_s + ((double) id.x / buffer[0].width) * (buffer[0].re_e - buffer[0].re_s);
-    c_im = buffer[0].im_s + ((double) id.y / buffer[0].height) * (buffer[0].im_e - buffer[0].im_s);
-
-    uint numIterations = 0;
-    float4 color = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    for (uint i = 0; i < maxIterations; i++)
-    {
-        re2 = re * re;
-        im2 = im * im;
-        if (re2 + im2 > 4)
-        {
-            break;
-        }
-        else
-        {
-            im = (2 * re * im) + c_im;
-            re = (re2 - im2) + c_re;
-            numIterations++;
-        }
-    }
-
-    // Assign color based on numIterations
-    if (numIterations != maxIterations)
-    {
-        int index = numIterations % 16;
-
-        switch (index)
-		{
+// Returns a color based on the index
+float4 GetColor(int numIterations, float4 color)
+{	
+    uint index = (uint)numIterations % 16;
+	
+    switch (index)
+	{
 		case 0:
 		{
 			color[0] = 66.0f / 255.0f;
@@ -168,8 +123,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			color[2] = 3.0f / 255.0f;
 			break;
 		}
-		};
-    }
-
-    Result[id.xy] = color;
+	}
+	
+    return color;
 }

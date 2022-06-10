@@ -1,40 +1,50 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class MandelbrotCS : MonoBehaviour
+public class Fractal : MonoBehaviour
 {
+    public string NAME;
+
     public double RE_START;
     public double RE_END;
     public double IM_START;
     public double IM_END;
+
+    [Range(-1, 1)]
+    public double RE_CONST;
+    [Range(-1, 1)]
+    public double IM_CONST;
+
     public int MAX_ITER;
     public double ZOOM;
     public int maxIterIncrement;
+    
     public float RE_CENTER;
     public float IM_CENTER;
     public bool autoZoom;
 
     public ComputeShader shader;
-    ComputeBuffer buffer;
-    RenderTexture texture;
+    internal ComputeBuffer buffer;
+    internal RenderTexture texture;
     public RawImage image;
 
-    double _RE_START;
-    double _RE_END;
-    double _IM_START;
-    double _IM_END;
-    int _MAX_ITER;
+    internal int _MAX_ITER;
+    internal double _RE_START;
+    internal double _RE_END;
+    internal double _IM_START;
+    internal double _IM_END;
 
-    Vector2 mouse;
+    internal Vector2 mouse;
 
     public struct DataStruct
     {
-        public double re_s, re_e, im_s, im_e;
-        public int width, height; 
+        public double re_s, re_e;
+        public double im_s, im_e;
+        public double re_c, im_c;
+        public int width, height;
     }
 
-    DataStruct[] data;
+    internal DataStruct[] data;
 
     // Start is called before the first frame update
     void Start()
@@ -52,12 +62,13 @@ public class MandelbrotCS : MonoBehaviour
             re_e = RE_END,
             im_s = IM_START,
             im_e = IM_END,
+            re_c = RE_CONST,
+            im_c = IM_CONST,
             width = texture.width,
             height = texture.height
         };
-        buffer = new ComputeBuffer(data.Length, 40);
-
-        Mandelbrot();
+        int bufferSize = sizeof(double) * 6 + sizeof(int) * 2;
+        buffer = new ComputeBuffer(data.Length, bufferSize);
 
         // Store original values
         _RE_START = RE_START;
@@ -67,11 +78,26 @@ public class MandelbrotCS : MonoBehaviour
         _MAX_ITER = MAX_ITER;
 
         mouse = new Vector2();
+
+        ComputeFractal();
+        SaveTexture();
     }
 
     // Update is called once per frame
     void Update()
     {
+        ComputeFractal();
+
+        if (Input.GetKey(KeyCode.LeftArrow))
+            RE_CONST -= 0.001f;
+        if (Input.GetKey(KeyCode.RightArrow))
+            RE_CONST += 0.001f;
+
+        if (Input.GetKey(KeyCode.UpArrow))
+            IM_CONST -= 0.001f;
+        if (Input.GetKey(KeyCode.DownArrow))
+            IM_CONST += 0.001f;
+
         if (Input.GetMouseButton(0))
             ZoomIn(true);
         if (Input.GetMouseButton(1))
@@ -81,7 +107,7 @@ public class MandelbrotCS : MonoBehaviour
             ZoomIn(false);
         if (Input.GetKey(KeyCode.D))
             ZoomOut(false);
-        
+
         if (Input.GetKey(KeyCode.R))
             ZoomReset();
     }
@@ -90,8 +116,8 @@ public class MandelbrotCS : MonoBehaviour
     {
         SetZoomCenter(useMouse);
 
-        MAX_ITER = (int) Mathf.Min(400, Mathf.Max(_MAX_ITER, MAX_ITER + maxIterIncrement));
-        
+        MAX_ITER = (int)Mathf.Min(400, Mathf.Max(_MAX_ITER, MAX_ITER + maxIterIncrement));
+
         double deltaRE = (RE_END - RE_START) * ZOOM * Time.deltaTime;
         RE_START += deltaRE * mouse.x / Screen.width;
         RE_END -= deltaRE * (1 - mouse.x / Screen.width);
@@ -99,20 +125,13 @@ public class MandelbrotCS : MonoBehaviour
         double deltaIM = (IM_END - IM_START) * ZOOM * Time.deltaTime;
         IM_START += deltaIM * mouse.y / Screen.height;
         IM_END -= deltaIM * (1 - mouse.y / Screen.height);
-
-        data[0].re_s = RE_START;
-        data[0].re_e = RE_END;
-        data[0].im_s = IM_START;
-        data[0].im_e = IM_END;
-        
-        Mandelbrot();
     }
 
     void ZoomOut(bool useMouse)
     {
         SetZoomCenter(useMouse);
-        
-        MAX_ITER = (int) Mathf.Min(400, Mathf.Max(_MAX_ITER, MAX_ITER + maxIterIncrement));
+
+        MAX_ITER = (int)Mathf.Min(400, Mathf.Max(_MAX_ITER, MAX_ITER + maxIterIncrement));
 
         double deltaRE = (RE_END - RE_START) * ZOOM * Time.deltaTime;
         RE_START -= deltaRE * mouse.x / Screen.width;
@@ -121,13 +140,6 @@ public class MandelbrotCS : MonoBehaviour
         double deltaIM = (IM_END - IM_START) * ZOOM * Time.deltaTime;
         IM_START -= deltaIM * mouse.y / Screen.height;
         IM_END += deltaIM * (1 - mouse.y / Screen.height);
-
-        data[0].re_s = RE_START;
-        data[0].re_e = RE_END;
-        data[0].im_s = IM_START;
-        data[0].im_e = IM_END;
-
-        Mandelbrot();
     }
 
     void ZoomReset()
@@ -137,14 +149,6 @@ public class MandelbrotCS : MonoBehaviour
         IM_START = _IM_START;
         IM_END = _IM_END;
         MAX_ITER = _MAX_ITER;
-
-        data[0].re_s = RE_START;
-        data[0].re_e = RE_END;
-        data[0].im_s = IM_START;
-        data[0].im_e = IM_END;
-        MAX_ITER = _MAX_ITER;
-
-        Mandelbrot();
     }
 
     void SetZoomCenter(bool useMouse)
@@ -162,8 +166,15 @@ public class MandelbrotCS : MonoBehaviour
     }
 
 
-    void Mandelbrot()
+    internal void ComputeFractal()
     {
+        data[0].re_s = RE_START;
+        data[0].re_e = RE_END;
+        data[0].im_s = IM_START;
+        data[0].im_e = IM_END;
+        data[0].re_c = RE_CONST;
+        data[0].im_c = IM_CONST;
+
         int kernelIndex = shader.FindKernel("CSMain");
 
         buffer.SetData(data);
@@ -174,11 +185,28 @@ public class MandelbrotCS : MonoBehaviour
         shader.Dispatch(kernelIndex, texture.width / 24, texture.height / 24, 1);
 
         RenderTexture.active = texture;
-        image.material.mainTexture = texture;
+        image.texture = texture;
+    }
+
+    public void SaveTexture()
+    {
+        Texture2D tex = ToTexture2D(texture);
+        byte[] bytes = tex.EncodeToPNG();
+        System.IO.File.WriteAllBytes("Assets/SavedScreen.png", bytes);
+    }
+
+    Texture2D ToTexture2D(RenderTexture rTex)
+    {
+        Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
+        RenderTexture.active = rTex;
+        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        tex.Apply();
+        return tex;
     }
 
     private void OnDestroy()
     {
-        buffer.Dispose();
+        if (buffer != null)
+            buffer.Dispose();
     }
 }

@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Julia
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: a8bffc1f4b95f0b439d5762dc4afdffd, type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: NAME
+    value: Julia Set
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: RE_START
+    value: -1.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: RE_END
+    value: 1.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: IM_START
+    value: -1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: IM_END
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: RE_CONST
+    value: -0.7900000214576721
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: IM_CONST
+    value: 0.15000000596046448
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: MAX_ITER
+    value: 255
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ZOOM
+    value: 0.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: maxIterIncrement
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: RE_CENTER
+    value: -1.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: IM_CENTER
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: autoZoom
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: shader
+    value: 
+    objectReference: {fileID: 7200000, guid: 3565da3675a330c42976711a82efbc26, type: 3}
+  - target: {fileID: 0}
+    propertyPath: image
+    value: 
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []

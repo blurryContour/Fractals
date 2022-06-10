@@ -1,0 +1,55 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Include custom files
+#include "../Shaders/ColorPallete.hlsl"
+#include "../Shaders/Common.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+// Mandelbrot variables
+StructuredBuffer<DataStruct> buffer;
+uint maxIterations;
+
+
+[numthreads(24,24,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    double c_re, c_im;
+    double re, im;
+    double re2, im2;
+
+    c_re = buffer[0].re_c;
+    c_im = buffer[0].im_c;
+    re = buffer[0].re_s + ((double) id.x / buffer[0].width) * (buffer[0].re_e - buffer[0].re_s);
+    im = buffer[0].im_s + ((double) id.y / buffer[0].height) * (buffer[0].im_e - buffer[0].im_s);
+
+    uint numIterations = 0;
+    float4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+    for (uint i = 0; i < maxIterations; i++)
+    {
+        re2 = re * re;
+        im2 = im * im;
+        if (re2 + im2 > 4)
+        {
+            break;
+        }
+        else
+        {
+            im = (2 * re * im) + c_im;
+            re = (re2 - im2) + c_re;
+            numIterations++;
+        }
+    }
+
+    // Assign color based on numIterations
+    if (numIterations != maxIterations)
+    {
+        color = GetColor(numIterations, color);
+    }
+
+    Result[id.xy] = color;
+}
